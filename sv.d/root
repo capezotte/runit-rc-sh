@@ -15,10 +15,9 @@ umount_fs() {
 	findmnt -mrunRo FSTYPE,OPTIONS,TARGET / | {
 		mounts=''
 		set -f
-		[ "$1" ] || set -- ' none '
-		while read -r fstype options target; do
+		while unset IFS; read -r fstype options target; do
 			# match only targeted fstypes
-			if [ "${1}" != "$fstype" ]; then
+			if [ "$1" ] && [ "${1}" != "$fstype" ]; then
 				continue
 			fi
 

@@ -1,0 +1,17 @@
+#!/bin/sh
+
+. /usr/lib/rc/functions
+
+case "$1" in
+    start)
+        stat_busy "Loading user-specified modules"
+        /usr/bin/modules-load || stat_die modules
+        add_daemon modules
+        stat_done modules
+        ;;
+    *)
+        echo "usage: $0 {start}"
+        exit 1
+        ;;
+esac
+

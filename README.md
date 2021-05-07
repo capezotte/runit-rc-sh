@@ -4,7 +4,7 @@ Tentative rewrite of Artix's runit-rc package for compatibility with more lightw
 
 # Todo (in order of priority?)
 
-- Fix unescaped \e appearing in Linux console during boot
-- Still have bashisms: dmesg, cryptsetup, root
-- Rely less on math\_check (AKA mental polyfill for (()
-- Maybe forgo local altogether?
+- Check whether sv.d/root actually works properly on shutdown
+- Test cryptsetup and lvm2 on a machine that uses them
+- Rely less on `math_check` ( `((` polyfill )
+- Avoid `local` keyword

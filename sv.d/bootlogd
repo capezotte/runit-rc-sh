@@ -7,7 +7,7 @@ start_bootlogd(){
 }
 
 stop_bootlogd(){
-    [ -f /run/bootlogd.pid ] | return 0
+    [ -f /run/bootlogd.pid ] || return 0
     touch /var/log/boot.log
     kill $(cat /run/bootlogd.pid)
     rm -f /run/bootlogd.pid

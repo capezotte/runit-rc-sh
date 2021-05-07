@@ -1,0 +1,68 @@
+#!/bin/sh
+
+. /usr/lib/rc/functions
+
+mount_fs(){
+	findmnt / --options ro >/dev/null 2>&1 || mount -o remount,ro / || return 1
+	return 0
+}
+
+# umount_fs(){
+#	 umount -r -a -t nosysfs,noproc,nodevtmpfs,notmpfs
+# }
+
+umount_fs() {
+	findmnt -mrunRo FSTYPE,OPTIONS,TARGET / | {
+		mounts=''
+		set -f
+		[ "$1" ] || set -- ' none '
+		while read -r fstype options target; do
+			# match only targeted fstypes
+			if [ "${1}" != "$fstype" ]; then
+				continue
+			fi
+
+			# do not unmount API filesystems
+			case "${target#/}" in
+				(proc|sys|run|dev|dev/pts) continue ;;
+				(*) : ;;
+			esac
+
+			# avoid networked devices
+			IFS=,
+			# shellcheck disable=SC2086
+			if in_array _netdev $options; then
+				continue
+			fi
+
+			# build list of escaped target tames
+			mounts="$mounts $target"
+		done
+		
+		IFS=' '
+		if [ "$mounts" ]; then
+			# shellcheck disable=SC2086 # use GNU printf and xargs to interpret \x
+			/usr/bin/printf '%b\0' $mounts | xargs -0 umount -r || return 1
+		fi
+		return 0
+	}
+}
+
+case "$1" in
+	start)
+		stat_busy "Mounting filesystems"
+		mount_fs || stat_die root
+		add_daemon root
+		stat_done root
+		;;
+	stop)
+		stat_busy "Unounting filesystems"
+		umount_fs || stat_die root
+		rm_daemon root
+		stat_done root
+		;;
+	*)
+		echo "usage: $0 {start|stop}"
+		exit 1
+		;;
+esac

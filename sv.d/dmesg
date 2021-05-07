@@ -1,0 +1,24 @@
+#!/bin/sh
+
+. /usr/lib/rc/functions
+
+config(){
+    dmesg | if [ "$(cat /proc/sys/kernel/dmesg_restrict 2>/dev/null)" = 1 ]; then
+        install -Tm 0600 /dev/stdin /var/log/dmesg.log
+    else
+        install -Tm 0644 /dev/stdin /var/log/dmesg.log
+    fi
+}
+
+case "$1" in
+    start)
+        stat_busy "Saving dmesg log"
+        config
+        add_daemon dmesg
+        stat_done
+        ;;
+    *)
+        echo "usage: $0 {start|stop}"
+        exit 1
+        ;;
+esac

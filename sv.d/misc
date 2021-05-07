@@ -4,17 +4,20 @@
 
 # Check local filesystems
 fsck_all() {
-	local cmdline
+	local cmdline FORCEFSCK IGNORE_MOUNTED
+	set -f
 	cmdline=$(cat /proc/cmdline)
+	# shellcheck disable=SC2086
 	if [ -f /forcefsck ] || in_array forcefsck $cmdline; then
-		FORCEFSCK="-f"
+		FORCEFSCK="1"
 	elif [ -f /fastboot ] || in_array fastboot $cmdline; then
 		return 0
 	elif [ -e /run/initramfs/root-fsck ]; then
-		IGNORE_MOUNTED="-M"
+		IGNORE_MOUNTED="1"
 	fi
+	set +f
 	netfs_prefix_no
-	fsck -A -T -M -C"${FSCK_FD}" -a -t "$NETFS,noopts=_netdev" ${IGNORE_MOUNTED} -- ${FORCEFSCK}
+	fsck -A -T -M -C"${FSCK_FD}" -a -t "$NETFS,noopts=_netdev" ${IGNORE_MOUNTED:+-M} -- ${FORCEFSCK:+-f}
 }
 
 # Single-user login and/or automatic reboot after fsck (if needed)
@@ -53,7 +56,7 @@ fsck_reboot() {
 }
 
 do_fsck(){
-	if [ -x "$(type -P fsck)" ]; then
+	if command -vp fsck >/dev/null 2>&1; then
 		fsck_all >|"${FSCK_OUT:-/dev/stdout}" 2>|"${FSCK_ERR:-/dev/stdout}"
 		fsckret="$?"
 	else

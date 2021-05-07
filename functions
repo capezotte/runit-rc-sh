@@ -31,9 +31,9 @@ calc_columns () {
 	STAT_COL=$(( STAT_COL - 13 ))
 
 	if [ -t 1 ]; then
-		SAVE_POSITION="\e[s"
-		RESTORE_POSITION="\e[u"
-		DEL_TEXT="\e[$(( STAT_COL + 4 ))G"
+		SAVE_POSITION='\033[s'
+		RESTORE_POSITION='\033[u'
+		DEL_TEXT="\033[$(( STAT_COL + 4 ))G"
 	else
 		SAVE_POSITION=""
 		RESTORE_POSITION=""
@@ -55,7 +55,7 @@ printsep() {
 
 stat_busy() {
 	printf "${C_OTHER}${PREFIX_REG} ${C_MAIN}${1}${C_CLEAR} "
-	printf "${SAVE_POSITION}"
+	printf '%b' "${SAVE_POSITION}"
 	deltext
 	printf "   ${C_OTHER}[${C_BUSY}busy${C_OTHER}]${C_CLEAR} "
 }
@@ -243,14 +243,14 @@ netfs_prefix_no() {
 	_NETFS=$NETFS
 	local OPTS_NO # With no in the beginning
 	# Eat fields
-	while [ "${_NETFS}" = "${_NETFS#*,}" ]; do
-		OPTS_NO="${OPTS_NO}no${_NETFS%%,*}"
+	until [ "${_NETFS}" = "${_NETFS#*,}" ]; do
+		OPTS_NO="${OPTS_NO},no${_NETFS%%,*}"
 		_NETFS="${_NETFS#*,}"
 	done
 	# Put remaning
-	OPTS_NO="${OPTS_NO}no${NETFS}"
+	OPTS_NO="${OPTS_NO},no${_NETFS}"
 	# Set global NETFS
-	NETFS=$OPTS_NO
+	NETFS=${OPTS_NO#,}
 }
 
 # set colors
@@ -273,17 +273,17 @@ case $USECOLOR in
 			C_H1="${C_MAIN}"					   # highlight text 1
 			C_H2="${C_MAIN}$(tput setaf 6)"		# highlight text 2
 		else
-			C_CLEAR="\e[m"		  # clear text
-			C_MAIN="\e[;1m"		 # main text
-			C_OTHER="\e[1;34m"	  # prefix & brackets
-			C_SEPARATOR="\e[1;30m"  # separator
-			C_BUSY="\e[;36m"		# busy
-			C_FAIL="\e[1;35m"	   # failed
+			C_CLEAR='\033[m'		  # clear text
+			C_MAIN='\033[;1m'		 # main text
+			C_OTHER='\033[1;34m'	  # prefix & brackets
+			C_SEPARATOR='\033[1;30m'  # separator
+			C_BUSY='\033[;36m'		# busy
+			C_FAIL='\033[1;35m'	   # failed
 			C_DONE=${C_MAIN}		# completed
-			C_STOP="\e[1;31m"	   # backgrounded
-			C_START="\e[1;32m"	# started
+			C_STOP='\033[1;31m'	   # backgrounded
+			C_START='\033[1;32m'	# started
 			C_H1=${C_MAIN}		  # highlight text 1
-			C_H2="\e[1;36m"		 # highlight text 2
+			C_H2='\033[1;36m'		 # highlight text 2
 		fi
 	;;
 esac

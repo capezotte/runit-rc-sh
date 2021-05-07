@@ -25,7 +25,7 @@ fsck_reboot() {
 	# $1 = exit code returned by fsck
 	# Ignore conditions 'FS errors corrected' and 'Cancelled by the user'
 	math_check "$(( ($1 | 33) == 33 ))" && return 0
-	if match_check "$(( $1 & 2 ))"; then
+	if math_check "$(( $1 & 2 ))"; then
 		echo
 		echo "********************** REBOOT REQUIRED *********************"
 		echo "*														  *"
